@@ -98,13 +98,13 @@ public class SearchActivity extends Activity {
 	
 	//fired whenever the search button is pressed
 	public void onImageSearch(View v) {
-//		setupCustomScrollListener();
+		setupCustomScrollListener();
 		loadData(0);
 	}
 
 
 	private void loadData(final int page) {
-		if (! isNetworkAvailable() || !isOnline()) {
+		if (! isNetworkAvailable()) {
 			Toast.makeText(this, "Network unavailable or not online", Toast.LENGTH_SHORT).show();
 			return;
 		}
@@ -229,18 +229,5 @@ public class SearchActivity extends Activity {
               = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
-    }
-    
-    public Boolean isOnline() {
-        try {
-            Process p1 = java.lang.Runtime.getRuntime().exec("ping -c 1 www.google.com");
-            int returnVal = p1.waitFor();
-            boolean reachable = (returnVal==0);
-            return reachable;
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return false;
     }
 }

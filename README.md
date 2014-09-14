@@ -19,4 +19,7 @@ TBD
 - **Required** Subsequent searches will have any filters applied to the search results
 - **Required** User can tap on any image in results to see the image full-screen
 - **Required** User can scroll down infinitely to continue loading more image results (up to 8 pages)
-- **Optional** Check if internet is available, network failures
+- **Optional** Check if network is available
+- **Optional** Experiment with making the user interface prettier (grid search doesn't show title, instead title is shown on the ImageDisplayActivity screen at the bottom of the view).
+
+![Grid Image Search Demo](grid_image_search_demo.gif "Grid Image Search Demo") 
