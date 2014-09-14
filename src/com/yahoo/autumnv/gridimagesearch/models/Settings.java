@@ -3,6 +3,8 @@ package com.yahoo.autumnv.gridimagesearch.models;
 import java.io.Serializable;
 
 public class Settings implements Serializable {
+	public static final String SETTINGS = "settings";
+
 	/**
 	 * 
 	 */

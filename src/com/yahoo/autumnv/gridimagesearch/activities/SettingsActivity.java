@@ -6,13 +6,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 
 import com.yahoo.autumnv.gridimagesearch.R;
 import com.yahoo.autumnv.gridimagesearch.models.Settings;
 
 public class SettingsActivity extends Activity {
 	private static final String NONE_SELECTED = "None Selected";
-	private static final String SETTINGS2 = "settings";
 	private Settings settings;
 
 	@Override
@@ -20,10 +20,19 @@ public class SettingsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_settings);
 		//Pull out arguments from the intent, if any
-		settings = (Settings)getIntent().getSerializableExtra(SETTINGS2);
+		settings = (Settings)getIntent().getSerializableExtra(Settings.SETTINGS);
 		
 		setSelectedEditText(settings.siteFilter, R.id.et_site_filter);
-//		Toast.makeText(this, "this is the settings page " + settings.value, Toast.LENGTH_SHORT).show();
+		setSelectedSpinnerValue(settings.colorFilter, R.id.sp_color_filter);
+		setSelectedSpinnerValue(settings.imageSize, R.id.sp_image_size);
+		setSelectedSpinnerValue(settings.typeFilter, R.id.sp_type_filter);
+	}
+
+	private void setSelectedSpinnerValue(String setting, int id) {
+		if (setting != null && setting.length() > 0) {
+			Spinner spinner = (Spinner)findViewById(id);
+			setSpinnerToValue(spinner, setting);
+		}
 	}
 
 	private void setSelectedEditText(String setting, int id) {
@@ -31,6 +40,18 @@ public class SettingsActivity extends Activity {
 			EditText etSetting = (EditText)findViewById(id);
 			etSetting.setText(setting);
 		}
+	}
+	
+	public void setSpinnerToValue(Spinner spinner, String value) {
+	    int index = 0;
+	    SpinnerAdapter adapter = spinner.getAdapter();
+	    for (int i = 0; i < adapter.getCount(); i++) {
+	        if (adapter.getItem(i).equals(value)) {
+	            index = i;
+	            break; // terminate loop
+	        }
+	    }
+	    spinner.setSelection(index);
 	}
 	
 	public void onSubmit(View v) {
@@ -44,7 +65,7 @@ public class SettingsActivity extends Activity {
 		
 		//Create result
 		Intent i = new Intent();
-		i.putExtra(SETTINGS2, settings);
+		i.putExtra(Settings.SETTINGS, settings);
 		//Submit result to parent activity
 		setResult(RESULT_OK, i);
 		finish();

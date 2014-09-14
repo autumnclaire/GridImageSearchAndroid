@@ -23,11 +23,11 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.yahoo.autumnv.gridimagesearch.R;
 import com.yahoo.autumnv.gridimagesearch.adapters.ImageResultsAdapter;
+import com.yahoo.autumnv.gridimagesearch.models.EndlessScrollListener;
 import com.yahoo.autumnv.gridimagesearch.models.ImageResult;
 import com.yahoo.autumnv.gridimagesearch.models.Settings;
 
 public class SearchActivity extends Activity {
-	public static final String SETTINGS = "settings";
 	private static final String RESULT = "result";
 	private static final int REQUEST_CODE = 0;
 	private EditText etQuery;
@@ -63,14 +63,66 @@ public class SearchActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_search);
 		setupViews();
+		setupImageResults();
+		setupSettings();
+
+	}
+
+
+	private void setupImageResults() {
 		imageResults = new ArrayList<ImageResult>();
 		aImageResults = new ImageResultsAdapter(this, imageResults);
 		gvResults.setAdapter(aImageResults);
-		this.settings = (Settings) this.getIntent().getSerializableExtra(SETTINGS);
+		setupCustomScrollListener();
+	}
+
+
+	private void setupCustomScrollListener() {
+		gvResults.setOnScrollListener(new EndlessScrollListener() {
+			
+			@Override
+			public void onLoadMore(int page, int totalItemsCount) {
+				customLoadMoreDataFromApi(page);
+			}
+		});
+	}
+
+	private void customLoadMoreDataFromApi(int page) {
+		loadData(page, false);
+		
+	}
+	
+	//fired whenever the search button is pressed
+	public void onImageSearch(View v) {
+		loadData(0, true);
+	}
+
+
+	private void loadData(int page, final boolean clearResults) {
+		AsyncHttpClient client = new AsyncHttpClient();
+		String searchUrl = buildSearchUrl(page);
+		client.get(searchUrl, new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+				JSONArray imageResultsJson = null;
+				try {
+					imageResultsJson = response.getJSONObject("responseData").getJSONArray("results");
+					if (clearResults) {
+						imageResults.clear();	//clear the existing images from the array
+					}
+					aImageResults.addAll(ImageResult.fromJSONArray(imageResultsJson));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	private void setupSettings() {
+		this.settings = (Settings) this.getIntent().getSerializableExtra(Settings.SETTINGS);
 		if (this.settings == null) {
 			this.settings = new Settings();
 		}
-
 	}
 
 	@Override
@@ -97,34 +149,15 @@ public class SearchActivity extends Activity {
     	//Create Intent
     	Intent i = new Intent(this, SettingsActivity.class);
 		//pass any arguments
-    	i.putExtra(SETTINGS, settings);
+    	i.putExtra(Settings.SETTINGS, settings);
     	//execute Intent startActivityForResult
     	startActivityForResult(i, REQUEST_CODE);
     }
 	
-	//fired whenever the search button is pressed
-	public void onImageSearch(View v) {
-		AsyncHttpClient client = new AsyncHttpClient();
-		String searchUrl = buildSearchUrl();
-		client.get(searchUrl, new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-//				Log.d("DEBUG", response.toString());
-				JSONArray imageResultsJson = null;
-				try {
-					imageResultsJson = response.getJSONObject("responseData").getJSONArray("results");
-					imageResults.clear();	//clear the existing images from the array
-					aImageResults.addAll(ImageResult.fromJSONArray(imageResultsJson));
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-//				Log.i("INFO", imageResults.toString());
-			}
-		});
-	}
 
 
-	private String buildSearchUrl() {
+
+	private String buildSearchUrl(int page) {
 		
 		StringBuilder searchUrl = new StringBuilder("https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8");
 		searchUrl.append(buildQueryParameter());
@@ -132,11 +165,17 @@ public class SearchActivity extends Activity {
 		searchUrl.append(buildImageTypeParameter());
 		searchUrl.append(buildSiteFilterParameter());
 		searchUrl.append(buildColorFilterParameter());
+		searchUrl.append(buildPageParameter(page));
 		String searchString = searchUrl.toString();
 		Toast.makeText(this, searchString, Toast.LENGTH_SHORT).show();
 		return searchString;
 	}
 	
+	private String buildPageParameter(int page) {
+		return "&start=" + page;
+	}
+
+
 	private String buildColorFilterParameter() {
 		return "&imgcolor=" + settings.colorFilter;
 	}
@@ -164,7 +203,7 @@ public class SearchActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     	if (requestCode == REQUEST_CODE) {
     		if (resultCode == RESULT_OK) {
-    			Settings settings = (Settings)data.getSerializableExtra(SETTINGS);
+    			Settings settings = (Settings)data.getSerializableExtra(Settings.SETTINGS);
     			this.settings = settings;
     		}
     	}
