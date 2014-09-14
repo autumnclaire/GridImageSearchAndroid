@@ -2,9 +2,11 @@ package com.yahoo.autumnv.gridimagesearch.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.yahoo.autumnv.gridimagesearch.R;
@@ -24,6 +26,8 @@ public class ImageDisplayActivity extends Activity {
 		ImageView ivImageResult = (ImageView)findViewById(R.id.ivImageResult);
 		//load the image url into the image view using Picasso
 		Picasso.with(this).load(result.fullUrl).into(ivImageResult);
+		TextView tvImageTitle = (TextView)findViewById(R.id.tvImageTitle);
+		tvImageTitle.setText(Html.fromHtml(result.title));
 		
 	}
 

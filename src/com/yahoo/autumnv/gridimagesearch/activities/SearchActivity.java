@@ -17,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -30,6 +29,7 @@ import com.yahoo.autumnv.gridimagesearch.models.Settings;
 public class SearchActivity extends Activity {
 	private static final String RESULT = "result";
 	private static final int REQUEST_CODE = 0;
+	private static final int RESULTS_PER_REQUEST = 8;
 	private EditText etQuery;
 	private GridView gvResults;
 	private ArrayList<ImageResult> imageResults;
@@ -88,17 +88,18 @@ public class SearchActivity extends Activity {
 	}
 
 	private void customLoadMoreDataFromApi(int page) {
-		loadData(page, false);
+		loadData(page);
 		
 	}
 	
 	//fired whenever the search button is pressed
 	public void onImageSearch(View v) {
-		loadData(0, true);
+//		setupCustomScrollListener();
+		loadData(0);
 	}
 
 
-	private void loadData(int page, final boolean clearResults) {
+	private void loadData(final int page) {
 		AsyncHttpClient client = new AsyncHttpClient();
 		String searchUrl = buildSearchUrl(page);
 		client.get(searchUrl, new JsonHttpResponseHandler() {
@@ -107,7 +108,7 @@ public class SearchActivity extends Activity {
 				JSONArray imageResultsJson = null;
 				try {
 					imageResultsJson = response.getJSONObject("responseData").getJSONArray("results");
-					if (clearResults) {
+					if (page == 0) {
 						imageResults.clear();	//clear the existing images from the array
 					}
 					aImageResults.addAll(ImageResult.fromJSONArray(imageResultsJson));
@@ -159,7 +160,8 @@ public class SearchActivity extends Activity {
 
 	private String buildSearchUrl(int page) {
 		
-		StringBuilder searchUrl = new StringBuilder("https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8");
+		StringBuilder searchUrl = new StringBuilder("https://ajax.googleapis.com/ajax/services/search/images?v=1.0");
+		searchUrl.append(buildResultCountParameter());
 		searchUrl.append(buildQueryParameter());
 		searchUrl.append(buildImageSizeParameter());
 		searchUrl.append(buildImageTypeParameter());
@@ -167,12 +169,17 @@ public class SearchActivity extends Activity {
 		searchUrl.append(buildColorFilterParameter());
 		searchUrl.append(buildPageParameter(page));
 		String searchString = searchUrl.toString();
-		Toast.makeText(this, searchString, Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, searchString, Toast.LENGTH_SHORT).show();
 		return searchString;
 	}
 	
+	private String buildResultCountParameter() {
+		return "&rsz=" + RESULTS_PER_REQUEST;
+	}
+
+
 	private String buildPageParameter(int page) {
-		return "&start=" + page;
+		return "&start=" + page * RESULTS_PER_REQUEST;
 	}
 
 
