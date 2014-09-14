@@ -9,7 +9,7 @@ GridImageSearchAndroid
 Autumn Victor
 
 ## Time Spent
-TBD
+10 hours
 
 ## User Stories Completed:
 
